@@ -3,398 +3,398 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flame Assistant Dashboard</title>
+    <title>Gemini Assistant Gateway Control Panel</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Use Inter font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <!-- Load Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                        'primary-dark': '#4338ca',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
+        /* Custom styles for better readability and UI */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1a1a2e; /* Dark theme background (Midnight Blue) */
-            color: #e5e7eb; /* Light gray text */
+            background-color: #f3f4f6;
         }
-        /* Custom scrollbar for chat history */
-        #chat-history::-webkit-scrollbar {
-            width: 6px;
+        .card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
         }
-        #chat-history::-webkit-scrollbar-thumb {
-            background-color: #ff8a00; /* Flame Orange */
-            border-radius: 3px;
-        }
-        #chat-history::-webkit-scrollbar-track {
-            background-color: #313154;
-        }
-        .status-dot {
-            transition: background-color 0.3s ease;
-        }
-        /* Style for the copy button when clicked */
-        .copied {
-            background-color: #10b981 !important; /* Green for success */
+        .response-box {
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
         }
     </style>
 </head>
-<body class="min-h-screen p-3 sm:p-6 lg:p-8">
+<body class="min-h-screen p-4 sm:p-8">
 
-    <div id="app" class="max-w-7xl mx-auto">
-        
-        <!-- Header & Title -->
-        <header class="mb-6 sm:mb-8">
-            <h1 class="text-3xl sm:text-5xl font-extrabold text-[#ff6b6b] flex items-center">
-                <span class="text-5xl sm:text-6xl mr-3" style="text-shadow: 0 0 15px #ff6b6b;">🔥</span>
-                Flame
-                <span class="ml-2 text-base sm:text-xl text-gray-400 font-medium hidden sm:inline-block">Assistant Control Panel</span>
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-primary-dark sm:text-4xl">
+                Gemini Assistant Gateway Control
             </h1>
-            <p class="text-gray-400 mt-1 text-sm sm:text-base">Real-time monitoring and interaction with the ESP32 voice assistant.</p>
+            <p class="mt-2 text-gray-600">
+                Test your deployed Gemini Assistant server endpoints.
+            </p>
         </header>
 
-        <!-- Main Grid Layout (Responsive: Stacked on mobile, two columns on desktop) -->
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Left Panel: Status, ID, Controls, and Scores (Stays on left on desktop) -->
-            <div class="lg:col-span-1 space-y-6">
-
-                <!-- Application ID Card (NEW - uses the ID you provided) -->
-                <div class="bg-[#2a2a47] p-5 rounded-xl shadow-2xl">
-                    <h2 class="text-lg sm:text-xl font-bold mb-3 text-cyan-400 flex items-center">
-                        <i data-lucide="server" class="w-5 h-5 mr-2"></i>
-                        Application ID
-                    </h2>
-                    <div class="flex items-center justify-between space-x-2">
-                        <div id="app-id" class="text-xs sm:text-sm font-mono bg-[#313154] p-3 rounded-lg overflow-x-auto whitespace-nowrap text-cyan-300 flex-grow">
-                            588ad7e0-001d-492c-84d4-edf98cd30b45.firebaseio.com
-                        </div>
-                        <button onclick="copyElementId('app-id')" 
-                                class="copy-btn p-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition duration-150 shadow-md flex-shrink-0"
-                                title="Copy Application ID">
-                            <i data-lucide="copy" class="w-5 h-5 text-white"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2">The unique identifier for the entire Flame project.</p>
-                </div>
-
-
-                <!-- Device ID Card (Specific to this running instance) -->
-                <div class="bg-[#2a2a47] p-5 rounded-xl shadow-2xl">
-                    <h2 class="text-lg sm:text-xl font-bold mb-3 text-[#ff8a00] flex items-center">
-                        <i data-lucide="scan" class="w-5 h-5 mr-2"></i>
-                        Device ID
-                    </h2>
-                    <div class="flex items-center justify-between space-x-2">
-                        <!-- ID Display - Use a monospace font for clarity -->
-                        <div id="connection-id" class="text-sm sm:text-base font-mono bg-[#313154] p-3 rounded-lg overflow-x-auto whitespace-nowrap text-cyan-300 flex-grow">
-                            <!-- ID will be inserted here by JavaScript -->
-                        </div>
-                        <!-- Copy Button -->
-                        <button onclick="copyElementId('connection-id')" 
-                                class="copy-btn p-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition duration-150 shadow-md flex-shrink-0"
-                                title="Copy Device ID to clipboard">
-                            <i data-lucide="copy" class="w-5 h-5 text-white"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2">Unique ID for this specific physical device.</p>
-                </div>
-
-
-                <!-- Current Status Card -->
-                <div class="bg-[#2a2a47] p-5 rounded-xl shadow-2xl">
-                    <h2 class="text-lg sm:text-xl font-bold mb-3 text-[#ff8a00]">Device Status</h2>
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between border-b border-[#313154] pb-2">
-                            <span class="flex items-center text-sm sm:text-base">
-                                <i data-lucide="cpu" class="w-4 h-4 sm:w-5 sm:h-5 mr-3 text-cyan-400"></i>
-                                Operating State
-                            </span>
-                            <div id="state-indicator" class="flex items-center font-semibold text-sm sm:text-base">
-                                <span id="status-dot" class="status-dot w-3 h-3 rounded-full mr-2 bg-gray-500"></span>
-                                <span id="status-text">IDLE</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between border-b border-[#313154] py-2">
-                            <span class="flex items-center text-sm sm:text-base">
-                                <i data-lucide="zap" class="w-4 h-4 sm:w-5 sm:h-5 mr-3 text-green-400"></i>
-                                Power/Heat
-                            </span>
-                            <span id="temp-display" class="text-sm sm:text-base">35.0°C (Normal)</span>
-                        </div>
-                        <div class="flex items-center justify-between pt-2">
-                            <span class="flex items-center text-sm sm:text-base">
-                                <i data-lucide="wifi" class="w-4 h-4 sm:w-5 sm:h-5 mr-3 text-purple-400"></i>
-                                Network
-                            </span>
-                            <span id="wifi-status" class="text-green-500 font-medium text-sm sm:text-base">CONNECTED</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gaming & Scoring Card (ELO) -->
-                <div class="bg-[#2a2a47] p-5 rounded-xl shadow-2xl">
-                    <h2 class="text-lg sm:text-xl font-bold mb-3 text-[#ff8a00]">Challenge Data</h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center bg-[#313154] p-3 rounded-lg">
-                            <span class="flex items-center font-medium text-sm sm:text-base">
-                                <i data-lucide="gem" class="w-5 h-5 mr-3 text-yellow-500"></i>
-                                ELO Rating
-                            </span>
-                            <span id="elo-rating" class="text-xl sm:text-2xl font-bold text-yellow-300">1000</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-[#313154] p-3 rounded-lg">
-                            <span class="flex items-center font-medium text-sm sm:text-base">
-                                <i data-lucide="clock" class="w-5 h-5 mr-3 text-indigo-400"></i>
-                                Survival Days
-                            </span>
-                            <span id="survival-days" class="text-xl sm:text-2xl font-bold">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Action Buttons -->
-                <div class="bg-[#2a2a47] p-5 rounded-xl shadow-2xl">
-                    <h2 class="text-lg sm:text-xl font-bold mb-3 text-[#ff8a00]">Quick Actions</h2>
-                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
-                        <button onclick="sendCommand('START_LISTENING')" class="flex items-center justify-center p-3 text-sm rounded-lg font-semibold bg-green-600 hover:bg-green-700 transition duration-150 shadow-md">
-                            <i data-lucide="mic" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"></i> Listen
-                        </button>
-                        <button onclick="sendCommand('TRIGGER_MACRO')" class="flex items-center justify-center p-3 text-sm rounded-lg font-semibold bg-orange-600 hover:bg-orange-700 transition duration-150 shadow-md">
-                            <i data-lucide="sword" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"></i> Macro
-                        </button>
-                        <button onclick="sendCommand('ENTER_COOLDOWN')" class="flex items-center justify-center p-3 text-sm rounded-lg font-semibold bg-gray-500 hover:bg-gray-600 transition duration-150 shadow-md">
-                            <i data-lucide="thermometer" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"></i> Cooldown
-                        </button>
-                        <button onclick="sendCommand('RESET')" class="flex items-center justify-center p-3 text-sm rounded-lg font-semibold bg-red-600 hover:bg-red-700 transition duration-150 shadow-md">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"></i> Reset
-                        </button>
-                    </div>
-                </div>
+        <!-- Configuration Section -->
+        <div class="card bg-white p-6 rounded-xl mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Server Configuration</h2>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input 
+                    type="text" 
+                    id="serverUrl" 
+                    placeholder="Enter Hugging Face Space URL (e.g., https://user-appname.hf.space)" 
+                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
+                    value=""
+                >
+                <button 
+                    onclick="saveServerUrl()" 
+                    class="bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition duration-150"
+                >
+                    Set URL
+                </button>
             </div>
+            <p id="urlStatus" class="mt-2 text-sm text-gray-500"></p>
+        </div>
 
-            <!-- Right Panel: Chat Interface (Takes up 2/3 width on desktop) -->
-            <div class="lg:col-span-2 bg-[#2a2a47] p-5 rounded-xl shadow-2xl flex flex-col h-[500px] sm:h-[650px] lg:h-[800px]">
-                <h2 class="text-xl font-bold mb-4 text-[#ff8a00] border-b border-[#313154] pb-2">Conversational Log</h2>
+        <!-- Main Interface Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- 1. LLM Generation Panel -->
+            <div class="card bg-white p-6 rounded-xl">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2 text-primary"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm-2 14v-4l2 4 2-4v4"></path></svg>
+                    Text Generation (LLM)
+                </h2>
                 
-                <!-- Chat History -->
-                <div id="chat-history" class="flex-grow overflow-y-auto space-y-4 p-2 mb-4 bg-[#313154] rounded-lg">
-                    <!-- Initial Welcome Message -->
-                    <div class="flex justify-start">
-                        <div class="bg-[#ff6b6b] text-white p-3 rounded-b-xl rounded-tr-xl max-w-[85%] sm:max-w-md shadow-md">
-                            <p class="font-bold">Flame</p>
-                            <p class="text-sm">System initialized and online. Application ID confirmed: 588ad7e0...firebaseio.com.</p>
-                        </div>
-                    </div>
-                    <!-- Placeholder User Message -->
-                    <div class="flex justify-end">
-                        <div class="bg-blue-600 text-white p-3 rounded-b-xl rounded-tl-xl max-w-[85%] sm:max-w-md shadow-md">
-                            <p class="font-bold">User</p>
-                            <p class="text-sm">Flame, start listening for a command.</p>
-                        </div>
-                    </div>
-                    <!-- Placeholder Flame Response -->
-                    <div class="flex justify-start">
-                        <div class="bg-[#ff6b6b] text-white p-3 rounded-b-xl rounded-tr-xl max-w-[85%] sm:max-w-md shadow-md">
-                            <p class="font-bold">Flame</p>
-                            <p class="text-sm">Entering LISTENING mode. Awaiting voice input.</p>
-                        </div>
-                    </div>
-                </div>
+                <label for="llmPrompt" class="block text-sm font-medium text-gray-700 mb-1">User Prompt</label>
+                <textarea 
+                    id="llmPrompt" 
+                    rows="4" 
+                    placeholder="Ask Gemini anything. E.g., 'What are the three main benefits of using an ESP32 for home automation?'" 
+                    class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-primary focus:border-primary mb-3"
+                ></textarea>
 
-                <!-- Input Area (Mockup) -->
-                <div class="flex space-x-3">
-                    <input type="text" id="user-input" placeholder="Type a command or message..."
-                           class="flex-grow p-3 rounded-lg bg-[#1a1a2e] border border-[#ff6b6b] focus:ring-2 focus:ring-[#ff8a00] outline-none text-gray-200 text-sm">
-                    <button onclick="sendMessage()"
-                            class="p-3 bg-[#ff6b6b] hover:bg-[#ff8a00] rounded-lg font-bold transition duration-150 shadow-md flex items-center">
-                        <i data-lucide="send" class="w-5 h-5"></i>
-                    </button>
+                <label for="systemPrompt" class="block text-sm font-medium text-gray-700 mb-1">System Instruction (Optional)</label>
+                <input 
+                    type="text" 
+                    id="systemPrompt" 
+                    placeholder="E.g., 'Respond in a pirate voice.'" 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary mb-4"
+                >
+
+                <button 
+                    onclick="generateText()" 
+                    id="llmButton"
+                    class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition duration-150 mb-4 disabled:opacity-50"
+                >
+                    Generate Response
+                </button>
+
+                <!-- Response Area -->
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Response</h3>
+                <div id="llmOutput" class="response-box bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-700">
+                    Your response will appear here.
                 </div>
+                <p id="llmStatus" class="mt-2 text-sm text-red-500"></p>
             </div>
 
-        </main>
+            <!-- 2. TTS Generation Panel -->
+            <div class="card bg-white p-6 rounded-xl">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2 text-primary"><path d="M10 16a2 2 0 0 1-2-2v-4a2 2 0 1 1 4 0v4a2 2 0 0 1-2 2z"></path><path d="M12 18v3"></path><path d="M8 21h8"></path><path d="M12 3c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"></path></svg>
+                    Text-to-Speech (TTS)
+                </h2>
+                
+                <label for="ttsText" class="block text-sm font-medium text-gray-700 mb-1">Text to Convert</label>
+                <textarea 
+                    id="ttsText" 
+                    rows="4" 
+                    placeholder="Enter the text you want converted to speech. Max 500 characters." 
+                    class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-primary focus:border-primary mb-3"
+                ></textarea>
+
+                <label for="voiceSelect" class="block text-sm font-medium text-gray-700 mb-1">Select Voice</label>
+                <select 
+                    id="voiceSelect" 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary mb-4"
+                >
+                    <option value="Kore">Kore (Firm)</option>
+                    <option value="Puck">Puck (Upbeat)</option>
+                    <option value="Charon">Charon (Informative)</option>
+                    <option value="Zephyr">Zephyr (Bright)</option>
+                    <option value="Fenrir">Fenrir (Excitable)</option>
+                    <option value="Leda">Leda (Youthful)</option>
+                    <!-- More voices can be added -->
+                </select>
+
+                <button 
+                    onclick="generateTTS()" 
+                    id="ttsButton"
+                    class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition duration-150 mb-4 disabled:opacity-50"
+                >
+                    Generate & Play Audio
+                </button>
+
+                <!-- Audio Playback Area -->
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Audio Playback</h3>
+                <audio id="audioPlayer" controls class="w-full hidden"></audio>
+                <div id="ttsOutput" class="response-box bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-700 flex items-center justify-center">
+                    Click "Generate & Play Audio" to hear the result.
+                </div>
+                <p id="ttsStatus" class="mt-2 text-sm text-red-500"></p>
+            </div>
+        </div>
     </div>
 
     <script>
-        const states = {
-            IDLE: { dot: 'bg-gray-500', text: 'IDLE' },
-            LISTENING: { dot: 'bg-yellow-500', text: 'LISTENING' },
-            SPEAKING: { dot: 'bg-purple-500', text: 'SPEAKING' },
-            GAMING_MODE: { dot: 'bg-lime-500', text: 'GAMING_MODE' },
-            MINECRAFT_MACRO_MODE: { dot: 'bg-orange-500', text: 'MACRO ACTIVE' },
-            COOLDOWN: { dot: 'bg-blue-500', text: 'COOLDOWN' },
-            ERROR_STATE: { dot: 'bg-red-500', text: 'ERROR_STATE' },
-            OVERHEAT: { dot: 'bg-red-700', text: 'OVERHEAT' },
-        };
-
-        let currentState = 'IDLE';
-
-        // Function to update the displayed status
-        function updateStatus(newState) {
-            currentState = newState;
-            const stateData = states[newState] || states['IDLE'];
-
-            document.getElementById('status-text').textContent = stateData.text;
-
-            const dot = document.getElementById('status-dot');
-            Object.values(states).forEach(s => {
-                dot.classList.remove(s.dot);
-            });
-            dot.classList.add(stateData.dot);
-
-            // Mock temperature update
-            let temp = 35.0 + Math.random() * 5;
-            let tempColor = 'text-green-500';
-            let tempText = 'Normal';
-
-            if (newState === 'OVERHEAT' || newState === 'COOLDOWN') {
-                temp = newState === 'OVERHEAT' ? 51.5 : 45.0 + Math.random() * 5;
-                tempColor = newState === 'OVERHEAT' ? 'text-red-500' : 'text-yellow-500';
-                tempText = newState === 'OVERHEAT' ? 'CRITICAL' : 'Cooling Down';
-            }
-            
-            const tempDisplay = document.getElementById('temp-display');
-            tempDisplay.textContent = `${temp.toFixed(1)}°C (${tempText})`;
-            tempDisplay.className = tempColor;
-
-            addMessage('SYSTEM', `State changed to: ${newState}`);
-        }
-
-        // Function to simulate sending commands and handling state changes
-        function sendCommand(command) {
-            console.log(`Command sent: ${command}`);
-            
-            switch(command) {
-                case 'START_LISTENING':
-                    updateStatus('LISTENING');
-                    break;
-                case 'TRIGGER_MACRO':
-                    updateStatus('MINECRAFT_MACRO_MODE');
-                    setTimeout(() => updateStatus('IDLE'), 3000); 
-                    break;
-                case 'ENTER_COOLDOWN':
-                    updateStatus('COOLDOWN');
-                    setTimeout(() => updateStatus('IDLE'), 5000); 
-                    break;
-                case 'RESET':
-                    updateStatus('IDLE');
-                    document.getElementById('elo-rating').textContent = '1000';
-                    document.getElementById('survival-days').textContent = '0';
-                    break;
-            }
-        }
+        const LLM_ENDPOINT = "/api/generate";
+        const TTS_ENDPOINT = "/api/tts";
         
-        // Function to add a message to the chat history
-        function addMessage(sender, text) {
-            const chatHistory = document.getElementById('chat-history');
-            const isUser = sender === 'User';
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
-            
-            const bubble = document.createElement('div');
-            // Dynamically calculate max width to be responsive
-            bubble.className = `p-3 rounded-b-xl shadow-md text-white text-sm max-w-[85%] sm:max-w-md ${isUser ? 'bg-blue-600 rounded-tl-xl' : 'bg-[#ff6b6b] rounded-tr-xl'}`;
-            
-            const senderSpan = document.createElement('p');
-            senderSpan.className = 'font-bold';
-            senderSpan.textContent = sender;
-
-            const textP = document.createElement('p');
-            textP.textContent = text;
-            
-            bubble.appendChild(senderSpan);
-            bubble.appendChild(textP);
-            messageDiv.appendChild(bubble);
-            chatHistory.appendChild(messageDiv);
-            
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-
-        // Function to send user input message
-        function sendMessage() {
-            const input = document.getElementById('user-input');
-            const message = input.value.trim();
-
-            if (message) {
-                addMessage('User', message);
-                input.value = '';
-                
-                // Mock Flame response
-                setTimeout(() => {
-                    const response = `Acknowledged: "${message}". The device is currently in the ${currentState} state.`;
-                    addMessage('Flame', response);
-                }, 1000);
-            }
-        }
+        // Configuration Elements
+        const serverUrlInput = document.getElementById('serverUrl');
+        const urlStatus = document.getElementById('urlStatus');
         
-        // Function to copy the connection ID to clipboard
-        function copyElementId(elementId) {
-            const idElement = document.getElementById(elementId);
-            const idText = idElement.textContent;
-            
-            // Find the corresponding copy button by traversing the DOM
-            const button = idElement.nextElementSibling;
+        // LLM Elements
+        const llmPromptInput = document.getElementById('llmPrompt');
+        const systemPromptInput = document.getElementById('systemPrompt');
+        const llmButton = document.getElementById('llmButton');
+        const llmOutput = document.getElementById('llmOutput');
+        const llmStatus = document.getElementById('llmStatus');
+        
+        // TTS Elements
+        const ttsTextInput = document.getElementById('ttsText');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const ttsButton = document.getElementById('ttsButton');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const ttsOutput = document.getElementById('ttsOutput');
+        const ttsStatus = document.getElementById('ttsStatus');
 
-            // Use the preferred clipboard API, with execCommand as a fallback
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(idText).then(() => {
-                    showCopiedFeedback(button);
-                }).catch(err => {
-                    console.error('Could not copy text using clipboard API: ', err);
-                    fallbackCopy(idText, button);
-                });
-            } else {
-                fallbackCopy(idText, button);
-            }
-        }
+        // Global variable for the base URL
+        let SERVER_BASE_URL = '';
 
-        function fallbackCopy(text, button) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            try {
-                document.execCommand('copy');
-                showCopiedFeedback(button);
-            } catch (err) {
-                console.error('Fallback copy failed: ', err);
-            }
-            document.body.removeChild(textarea);
-        }
-
-        function showCopiedFeedback(button) {
-            // Store original content
-            const originalIcon = button.innerHTML;
-            
-            button.classList.add('copied');
-            button.innerHTML = '<i data-lucide="check" class="w-5 h-5 text-white"></i>';
-            lucide.createIcons();
-            
-            setTimeout(() => {
-                button.classList.remove('copied');
-                button.innerHTML = originalIcon;
-                lucide.createIcons();
-            }, 1500);
-        }
-
-        // Initialize the status indicator, ID, and icons when the page loads
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons(); 
-            
-            // Mock the Device ID (a short, user-friendly UUID for the specific assistant device)
-            const mockDeviceId = 'FLAME-32E7-ESP';
-            document.getElementById('connection-id').textContent = mockDeviceId;
-
-            updateStatus(currentState); 
-            
-            // Make Enter key trigger sendMessage
-            document.getElementById('user-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    sendMessage();
-                }
-            });
+            // Load saved URL from storage
+            const savedUrl = localStorage.getItem('SERVER_BASE_URL');
+            if (savedUrl) {
+                SERVER_BASE_URL = savedUrl;
+                serverUrlInput.value = savedUrl;
+                urlStatus.textContent = 'Server URL loaded.';
+                urlStatus.className = 'mt-2 text-sm text-green-600';
+            } else {
+                urlStatus.textContent = 'Please enter your Hugging Face Space URL above.';
+                urlStatus.className = 'mt-2 text-sm text-red-500';
+            }
         });
-        
-    </script>
 
+        function saveServerUrl() {
+            const url = serverUrlInput.value.trim();
+            if (url && url.startsWith('http')) {
+                SERVER_BASE_URL = url.endsWith('/') ? url.slice(0, -1) : url;
+                localStorage.setItem('SERVER_BASE_URL', SERVER_BASE_URL);
+                urlStatus.textContent = `Server URL set to: ${SERVER_BASE_URL}`;
+                urlStatus.className = 'mt-2 text-sm text-green-600';
+            } else {
+                urlStatus.textContent = 'Invalid URL. Must start with http(s).';
+                urlStatus.className = 'mt-2 text-sm text-red-500';
+            }
+        }
+
+        function checkServerUrl() {
+            if (!SERVER_BASE_URL) {
+                const errorMsg = 'Please set the Server URL first.';
+                alertMessage(llmStatus, errorMsg);
+                alertMessage(ttsStatus, errorMsg);
+                return false;
+            }
+            return true;
+        }
+
+        function alertMessage(element, message) {
+            element.textContent = message;
+            setTimeout(() => { element.textContent = ''; }, 5000);
+        }
+
+        function setLLMLoading(isLoading) {
+            llmButton.disabled = isLoading;
+            llmButton.textContent = isLoading ? 'Generating...' : 'Generate Response';
+            llmOutput.textContent = isLoading ? 'Waiting for server response...' : llmOutput.textContent;
+            llmStatus.textContent = '';
+        }
+
+        function setTTSLoading(isLoading) {
+            ttsButton.disabled = isLoading;
+            ttsButton.textContent = isLoading ? 'Generating Audio...' : 'Generate & Play Audio';
+            ttsOutput.textContent = isLoading ? 'Waiting for server response...' : ttsOutput.textContent;
+            ttsStatus.textContent = '';
+        }
+
+        // --- LLM GENERATION ---
+        async function generateText() {
+            if (!checkServerUrl()) return;
+
+            const userQuery = llmPromptInput.value.trim();
+            const systemPrompt = systemPromptInput.value.trim();
+
+            if (!userQuery) {
+                alertMessage(llmStatus, 'Please enter a user prompt.');
+                return;
+            }
+
+            setLLMLoading(true);
+            
+            try {
+                const response = await fetch(`${SERVER_BASE_URL}${LLM_ENDPOINT}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userQuery, systemPrompt }),
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    llmOutput.textContent = data.text;
+                } else {
+                    const errorDetails = data.details ? JSON.stringify(data.details, null, 2) : data.error;
+                    llmOutput.textContent = `ERROR (${response.status}):\n${errorDetails}`;
+                    alertMessage(llmStatus, 'Error generating text. Check console for details.');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                llmOutput.textContent = 'Network or server connection error.';
+                alertMessage(llmStatus, 'Connection failed. Check your server URL and console.');
+            } finally {
+                setLLMLoading(false);
+            }
+        }
+
+        // --- TTS GENERATION ---
+        async function generateTTS() {
+            if (!checkServerUrl()) return;
+            
+            const textToSpeak = ttsTextInput.value.trim();
+            const voiceName = voiceSelect.value;
+
+            if (!textToSpeak) {
+                alertMessage(ttsStatus, 'Please enter text to speak.');
+                return;
+            }
+
+            setTTSLoading(true);
+            audioPlayer.classList.add('hidden');
+            audioPlayer.pause();
+            
+            try {
+                const response = await fetch(`${SERVER_BASE_URL}${TTS_ENDPOINT}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ textToSpeak, voiceName }),
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.audioData) {
+                    ttsOutput.textContent = 'Audio data received. Converting to WAV and playing...';
+                    
+                    // Convert base64 PCM to WAV blob and play
+                    const base64Data = data.audioData;
+                    const sampleRate = 24000; // Hardcoded, as per typical Gemini TTS output rate
+
+                    const pcmData = base64ToArrayBuffer(base64Data);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.classList.remove('hidden');
+                    audioPlayer.play();
+                    
+                    ttsOutput.textContent = 'Playback ready. (You can also download this file, but only the base64 data will be sent to the ESP32.)';
+                    alertMessage(ttsStatus, 'Audio generated and playing!');
+
+                } else {
+                    const errorDetails = data.details ? JSON.stringify(data.details, null, 2) : data.error;
+                    ttsOutput.textContent = `ERROR (${response.status}):\n${errorDetails}`;
+                    alertMessage(ttsStatus, 'Error generating TTS. Check console for details.');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                ttsOutput.textContent = 'Network or server connection error.';
+                alertMessage(ttsStatus, 'Connection failed. Check your server URL and console.');
+            } finally {
+                setTTSLoading(false);
+            }
+        }
+
+        // --- Audio Utility Functions ---
+        // Helper to convert Base64 string to ArrayBuffer (required for PCM data)
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // Converts signed 16-bit PCM data to a WAV Blob
+        function pcmToWav(pcm16, sampleRate) {
+            const numChannels = 1;
+            const bytesPerSample = 2; // 16-bit PCM
+
+            const buffer = new ArrayBuffer(44 + pcm16.length * bytesPerSample);
+            const view = new DataView(buffer);
+
+            // Helper function to write bytes
+            function writeString(view, offset, string) {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            }
+
+            // RIFF chunk descriptor
+            writeString(view, 0, 'RIFF'); // Chunk ID
+            view.setUint32(4, 36 + pcm16.length * bytesPerSample, true); // Chunk Size
+            writeString(view, 8, 'WAVE'); // Format
+
+            // fmt sub-chunk
+            writeString(view, 12, 'fmt '); // Sub-chunk 1 ID
+            view.setUint32(16, 16, true); // Sub-chunk 1 Size (16 for PCM)
+            view.setUint16(20, 1, true); // Audio Format (1 for PCM)
+            view.setUint16(22, numChannels, true); // Num Channels
+            view.setUint32(24, sampleRate, true); // Sample Rate
+            view.setUint32(28, sampleRate * numChannels * bytesPerSample, true); // Byte Rate
+            view.setUint16(32, numChannels * bytesPerSample, true); // Block Align
+            view.setUint16(34, 16, true); // Bits Per Sample (16)
+
+            // data sub-chunk
+            writeString(view, 36, 'data'); // Sub-chunk 2 ID
+            view.setUint32(40, pcm16.length * bytesPerSample, true); // Sub-chunk 2 Size
+
+            // Write PCM data
+            let offset = 44;
+            for (let i = 0; i < pcm16.length; i++, offset += bytesPerSample) {
+                view.setInt16(offset, pcm16[i], true); // Write 16-bit signed integer
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+    </script>
 </body>
 </html>
