@@ -3,398 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Assistant Gateway Control Panel</title>
-    <!-- Load Tailwind CSS -->
+    <title>Flame | Gemini Assistant Gateway</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#4f46e5',
-                        'primary-dark': '#4338ca',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for better readability and UI */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        }
-        .response-box {
-            white-space: pre-wrap;
-            word-break: break-word;
-            min-height: 100px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .input-dark { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.1); color: white; }
+        .input-dark:focus { border-color: #6366f1; outline: none; ring: 2px #6366f1; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen p-4 sm:p-8">
+<body class="min-h-screen pb-12">
 
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-3xl font-extrabold text-primary-dark sm:text-4xl">
-                Gemini Assistant Gateway Control
-            </h1>
-            <p class="mt-2 text-gray-600">
-                Test your deployed Gemini Assistant server endpoints.
-            </p>
-        </header>
-
-        <!-- Configuration Section -->
-        <div class="card bg-white p-6 rounded-xl mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Server Configuration</h2>
-            <div class="flex flex-col sm:flex-row gap-4">
-                <input 
-                    type="text" 
-                    id="serverUrl" 
-                    placeholder="Enter Hugging Face Space URL (e.g., https://user-appname.hf.space)" 
-                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-                    value=""
-                >
-                <button 
-                    onclick="saveServerUrl()" 
-                    class="bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition duration-150"
-                >
-                    Set URL
-                </button>
-            </div>
-            <p id="urlStatus" class="mt-2 text-sm text-gray-500"></p>
-        </div>
-
-        <!-- Main Interface Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-            <!-- 1. LLM Generation Panel -->
-            <div class="card bg-white p-6 rounded-xl">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2 text-primary"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm-2 14v-4l2 4 2-4v4"></path></svg>
-                    Text Generation (LLM)
-                </h2>
-                
-                <label for="llmPrompt" class="block text-sm font-medium text-gray-700 mb-1">User Prompt</label>
-                <textarea 
-                    id="llmPrompt" 
-                    rows="4" 
-                    placeholder="Ask Gemini anything. E.g., 'What are the three main benefits of using an ESP32 for home automation?'" 
-                    class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-primary focus:border-primary mb-3"
-                ></textarea>
-
-                <label for="systemPrompt" class="block text-sm font-medium text-gray-700 mb-1">System Instruction (Optional)</label>
-                <input 
-                    type="text" 
-                    id="systemPrompt" 
-                    placeholder="E.g., 'Respond in a pirate voice.'" 
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary mb-4"
-                >
-
-                <button 
-                    onclick="generateText()" 
-                    id="llmButton"
-                    class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition duration-150 mb-4 disabled:opacity-50"
-                >
-                    Generate Response
-                </button>
-
-                <!-- Response Area -->
-                <h3 class="text-lg font-medium text-gray-800 mb-2">Response</h3>
-                <div id="llmOutput" class="response-box bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-700">
-                    Your response will appear here.
+    <!-- Header -->
+    <nav class="glass sticky top-0 z-50 px-6 py-4 mb-8">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
                 </div>
-                <p id="llmStatus" class="mt-2 text-sm text-red-500"></p>
+                <h1 class="text-xl font-bold tracking-tight">Flame <span class="text-indigo-400 font-medium text-sm ml-1">v2.5</span></h1>
             </div>
-
-            <!-- 2. TTS Generation Panel -->
-            <div class="card bg-white p-6 rounded-xl">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2 text-primary"><path d="M10 16a2 2 0 0 1-2-2v-4a2 2 0 1 1 4 0v4a2 2 0 0 1-2 2z"></path><path d="M12 18v3"></path><path d="M8 21h8"></path><path d="M12 3c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"></path></svg>
-                    Text-to-Speech (TTS)
-                </h2>
-                
-                <label for="ttsText" class="block text-sm font-medium text-gray-700 mb-1">Text to Convert</label>
-                <textarea 
-                    id="ttsText" 
-                    rows="4" 
-                    placeholder="Enter the text you want converted to speech. Max 500 characters." 
-                    class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-primary focus:border-primary mb-3"
-                ></textarea>
-
-                <label for="voiceSelect" class="block text-sm font-medium text-gray-700 mb-1">Select Voice</label>
-                <select 
-                    id="voiceSelect" 
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary mb-4"
-                >
-                    <option value="Kore">Kore (Firm)</option>
-                    <option value="Puck">Puck (Upbeat)</option>
-                    <option value="Charon">Charon (Informative)</option>
-                    <option value="Zephyr">Zephyr (Bright)</option>
-                    <option value="Fenrir">Fenrir (Excitable)</option>
-                    <option value="Leda">Leda (Youthful)</option>
-                    <!-- More voices can be added -->
-                </select>
-
-                <button 
-                    onclick="generateTTS()" 
-                    id="ttsButton"
-                    class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition duration-150 mb-4 disabled:opacity-50"
-                >
-                    Generate & Play Audio
-                </button>
-
-                <!-- Audio Playback Area -->
-                <h3 class="text-lg font-medium text-gray-800 mb-2">Audio Playback</h3>
-                <audio id="audioPlayer" controls class="w-full hidden"></audio>
-                <div id="ttsOutput" class="response-box bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm text-gray-700 flex items-center justify-center">
-                    Click "Generate & Play Audio" to hear the result.
-                </div>
-                <p id="ttsStatus" class="mt-2 text-sm text-red-500"></p>
+            <div id="authStatus" class="text-xs font-mono text-slate-400 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">
+                Connecting...
             </div>
         </div>
-    </div>
+    </nav>
 
-    <script>
-        const LLM_ENDPOINT = "/api/generate";
-        const TTS_ENDPOINT = "/api/tts";
+    <main class="max-w-6xl mx-auto px-6">
         
-        // Configuration Elements
-        const serverUrlInput = document.getElementById('serverUrl');
-        const urlStatus = document.getElementById('urlStatus');
-        
-        // LLM Elements
-        const llmPromptInput = document.getElementById('llmPrompt');
-        const systemPromptInput = document.getElementById('systemPrompt');
-        const llmButton = document.getElementById('llmButton');
-        const llmOutput = document.getElementById('llmOutput');
-        const llmStatus = document.getElementById('llmStatus');
-        
-        // TTS Elements
-        const ttsTextInput = document.getElementById('ttsText');
-        const voiceSelect = document.getElementById('voiceSelect');
-        const ttsButton = document.getElementById('ttsButton');
-        const audioPlayer = document.getElementById('audioPlayer');
-        const ttsOutput = document.getElementById('ttsOutput');
-        const ttsStatus = document.getElementById('ttsStatus');
+        <!-- Top Stats/Sync Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm mb-1">Status</p>
+                <div class="flex items-center gap-2">
+                    <span id="statusIndicator" class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+                    <h3 id="displayStatus" class="text-lg font-semibold">Idle</h3>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl md:col-span-2">
+                <p class="text-slate-400 text-sm mb-2">Hugging Face Space URL</p>
+                <div class="flex gap-3">
+                    <input type="text" id="serverUrl" placeholder="https://user-app.hf.space" class="input-dark flex-grow px-4 py-2 rounded-xl text-sm">
+                    <button onclick="saveServerUrl()" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-xl text-sm font-semibold transition-all">Connect</button>
+                </div>
+            </div>
+        </div>
 
-        // Global variable for the base URL
-        let SERVER_BASE_URL = '';
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left: Settings (Firestore Sync) -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="glass p-6 rounded-2xl">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        Assistant Persona
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1 block">Name</label>
+                            <input type="text" id="personaName" value="Flame" class="input-dark w-full px-4 py-2 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1 block">Developer</label>
+                            <input type="text" id="devName" value="Arsh" class="input-dark w-full px-4 py-2 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1 block">System Instructions</label>
+                            <textarea id="systemPrompt" rows="4" class="input-dark w-full px-4 py-2 rounded-xl text-sm resize-none"></textarea>
+                        </div>
+                        <button onclick="syncSettings()" class="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Sync to Firebase
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load saved URL from storage
-            const savedUrl = localStorage.getItem('SERVER_BASE_URL');
-            if (savedUrl) {
-                SERVER_BASE_URL = savedUrl;
-                serverUrlInput.value = savedUrl;
-                urlStatus.textContent = 'Server URL loaded.';
-                urlStatus.className = 'mt-2 text-sm text-green-600';
-            } else {
-                urlStatus.textContent = 'Please enter your Hugging Face Space URL above.';
-                urlStatus.className = 'mt-2 text-sm text-red-500';
+            <!-- Right: Interactive Panels -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- Text Generation -->
+                <div class="glass p-8 rounded-3xl">
+                    <div class="flex justify-between items-start mb-6">
+                        <h2 class="text-2xl font-bold text-white">Ask Gemini</h2>
+                        <span class="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-mono">LLM-09-2025</span>
+                    </div>
+                    <textarea id="llmPrompt" rows="3" placeholder="What can I help you with today?" class="input-dark w-full p-6 rounded-2xl text-lg mb-6 shadow-inner"></textarea>
+                    
+                    <button id="llmButton" onclick="generateText()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-600/20 transition-all active:scale-95">
+                        Generate Intelligence
+                    </button>
+
+                    <div id="llmResultContainer" class="hidden mt-8 p-6 bg-slate-900/50 rounded-2xl border border-indigo-500/20">
+                        <h4 class="text-xs font-bold text-indigo-400 uppercase mb-3">Response</h4>
+                        <div id="llmOutput" class="text-slate-200 leading-relaxed whitespace-pre-wrap"></div>
+                    </div>
+                </div>
+
+                <!-- TTS Generation -->
+                <div class="glass p-8 rounded-3xl">
+                    <h2 class="text-2xl font-bold text-white mb-6">Vocalize</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2 block">Voice Profile</label>
+                            <select id="voiceSelect" class="input-dark w-full px-4 py-3 rounded-xl appearance-none">
+                                <option value="Kore">Kore (Standard)</option>
+                                <option value="Puck">Puck (Cheer)</option>
+                                <option value="Charon">Charon (Deep)</option>
+                                <option value="Zephyr">Zephyr (Soft)</option>
+                                <option value="Leda">Leda (Bright)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2 block">Input Text</label>
+                            <input type="text" id="ttsText" placeholder="Enter speech text..." class="input-dark w-full px-4 py-3 rounded-xl">
+                        </div>
+                    </div>
+                    
+                    <button id="ttsButton" onclick="generateTTS()" class="w-full bg-slate-700 hover:bg-slate-600 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                        Produce Audio
+                    </button>
+
+                    <div id="audioContainer" class="hidden mt-6 flex items-center gap-4 p-4 bg-slate-800/40 rounded-2xl">
+                        <audio id="audioPlayer" controls class="flex-grow"></audio>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Environment Globals
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'flame-assistant-gateway';
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // Auth Logic
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Auth failed", e);
+                document.getElementById('authStatus').innerText = "Auth Error";
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('authStatus').innerText = "Connected: " + user.uid.substring(0,8);
+                document.getElementById('authStatus').classList.replace('text-slate-400', 'text-green-400');
+                listenToDeviceStatus();
             }
         });
 
-        function saveServerUrl() {
-            const url = serverUrlInput.value.trim();
-            if (url && url.startsWith('http')) {
-                SERVER_BASE_URL = url.endsWith('/') ? url.slice(0, -1) : url;
-                localStorage.setItem('SERVER_BASE_URL', SERVER_BASE_URL);
-                urlStatus.textContent = `Server URL set to: ${SERVER_BASE_URL}`;
-                urlStatus.className = 'mt-2 text-sm text-green-600';
-            } else {
-                urlStatus.textContent = 'Invalid URL. Must start with http(s).';
-                urlStatus.className = 'mt-2 text-sm text-red-500';
-            }
-        }
+        initAuth();
 
-        function checkServerUrl() {
-            if (!SERVER_BASE_URL) {
-                const errorMsg = 'Please set the Server URL first.';
-                alertMessage(llmStatus, errorMsg);
-                alertMessage(ttsStatus, errorMsg);
-                return false;
-            }
-            return true;
-        }
-
-        function alertMessage(element, message) {
-            element.textContent = message;
-            setTimeout(() => { element.textContent = ''; }, 5000);
-        }
-
-        function setLLMLoading(isLoading) {
-            llmButton.disabled = isLoading;
-            llmButton.textContent = isLoading ? 'Generating...' : 'Generate Response';
-            llmOutput.textContent = isLoading ? 'Waiting for server response...' : llmOutput.textContent;
-            llmStatus.textContent = '';
-        }
-
-        function setTTSLoading(isLoading) {
-            ttsButton.disabled = isLoading;
-            ttsButton.textContent = isLoading ? 'Generating Audio...' : 'Generate & Play Audio';
-            ttsOutput.textContent = isLoading ? 'Waiting for server response...' : ttsOutput.textContent;
-            ttsStatus.textContent = '';
-        }
-
-        // --- LLM GENERATION ---
-        async function generateText() {
-            if (!checkServerUrl()) return;
-
-            const userQuery = llmPromptInput.value.trim();
-            const systemPrompt = systemPromptInput.value.trim();
-
-            if (!userQuery) {
-                alertMessage(llmStatus, 'Please enter a user prompt.');
-                return;
-            }
-
-            setLLMLoading(true);
+        // Sync Settings to Firebase (RULE 1: Correct Paths)
+        window.syncSettings = async () => {
+            if (!currentUser) return;
+            const data = {
+                personaName: document.getElementById('personaName').value,
+                developerName: document.getElementById('devName').value,
+                systemPrompt: document.getElementById('systemPrompt').value,
+                updatedAt: Date.now()
+            };
             
             try {
-                const response = await fetch(`${SERVER_BASE_URL}${LLM_ENDPOINT}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userQuery, systemPrompt }),
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    llmOutput.textContent = data.text;
-                } else {
-                    const errorDetails = data.details ? JSON.stringify(data.details, null, 2) : data.error;
-                    llmOutput.textContent = `ERROR (${response.status}):\n${errorDetails}`;
-                    alertMessage(llmStatus, 'Error generating text. Check console for details.');
-                }
-            } catch (error) {
-                console.error('Fetch error:', error);
-                llmOutput.textContent = 'Network or server connection error.';
-                alertMessage(llmStatus, 'Connection failed. Check your server URL and console.');
-            } finally {
-                setLLMLoading(false);
+                const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config');
+                await setDoc(configRef, data, { merge: true });
+                showToast("Settings Synced!");
+            } catch (e) {
+                console.error(e);
+                showToast("Sync Failed", true);
             }
+        };
+
+        // Listen to Assistant Status
+        function listenToDeviceStatus() {
+            const statusRef = doc(db, 'artifacts', appId, 'public', 'data', 'status');
+            onSnapshot(statusRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const stateNames = ["Idle", "Listening", "Thinking", "Speaking", "Cooldown", "Gaming", "Chess", "Macro", "Error"];
+                    const state = data.currentState || 0;
+                    document.getElementById('displayStatus').innerText = stateNames[state] || "Unknown";
+                    
+                    const indicator = document.getElementById('statusIndicator');
+                    indicator.className = "w-3 h-3 rounded-full animate-pulse " + 
+                        (state === 8 ? 'bg-red-500' : state === 0 ? 'bg-green-500' : 'bg-indigo-500');
+                }
+            }, (err) => console.error("Status Sync Error", err));
         }
 
-        // --- TTS GENERATION ---
-        async function generateTTS() {
-            if (!checkServerUrl()) return;
-            
-            const textToSpeak = ttsTextInput.value.trim();
-            const voiceName = voiceSelect.value;
-
-            if (!textToSpeak) {
-                alertMessage(ttsStatus, 'Please enter text to speak.');
-                return;
+        // --- Logic Handlers ---
+        window.saveServerUrl = () => {
+            const url = document.getElementById('serverUrl').value.trim();
+            if (url) {
+                const cleanUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+                localStorage.setItem('FLAME_SERVER_URL', cleanUrl);
+                showToast("URL Saved");
             }
+        };
 
-            setTTSLoading(true);
-            audioPlayer.classList.add('hidden');
-            audioPlayer.pause();
+        window.generateText = async () => {
+            const baseUrl = localStorage.getItem('FLAME_SERVER_URL');
+            if (!baseUrl) return showToast("Set Space URL first", true);
+
+            const prompt = document.getElementById('llmPrompt').value;
+            const sys = document.getElementById('systemPrompt').value;
+            const btn = document.getElementById('llmButton');
+            
+            setLoading('llmButton', true, 'Synthesizing...');
             
             try {
-                const response = await fetch(`${SERVER_BASE_URL}${TTS_ENDPOINT}`, {
+                const res = await fetch(`${baseUrl}/api/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ textToSpeak, voiceName }),
+                    body: JSON.stringify({ userQuery: prompt, systemPrompt: sys })
                 });
-
-                const data = await response.json();
+                const data = await res.json();
                 
-                if (response.ok && data.audioData) {
-                    ttsOutput.textContent = 'Audio data received. Converting to WAV and playing...';
-                    
-                    // Convert base64 PCM to WAV blob and play
-                    const base64Data = data.audioData;
-                    const sampleRate = 24000; // Hardcoded, as per typical Gemini TTS output rate
-
-                    const pcmData = base64ToArrayBuffer(base64Data);
-                    const pcm16 = new Int16Array(pcmData);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-                    
-                    audioPlayer.src = audioUrl;
-                    audioPlayer.classList.remove('hidden');
-                    audioPlayer.play();
-                    
-                    ttsOutput.textContent = 'Playback ready. (You can also download this file, but only the base64 data will be sent to the ESP32.)';
-                    alertMessage(ttsStatus, 'Audio generated and playing!');
-
-                } else {
-                    const errorDetails = data.details ? JSON.stringify(data.details, null, 2) : data.error;
-                    ttsOutput.textContent = `ERROR (${response.status}):\n${errorDetails}`;
-                    alertMessage(ttsStatus, 'Error generating TTS. Check console for details.');
-                }
-            } catch (error) {
-                console.error('Fetch error:', error);
-                ttsOutput.textContent = 'Network or server connection error.';
-                alertMessage(ttsStatus, 'Connection failed. Check your server URL and console.');
+                document.getElementById('llmResultContainer').classList.remove('hidden');
+                document.getElementById('llmOutput').innerText = data.text || data.error;
+            } catch (e) {
+                showToast("Server Error", true);
             } finally {
-                setTTSLoading(false);
+                setLoading('llmButton', false, 'Generate Intelligence');
             }
+        };
+
+        window.generateTTS = async () => {
+            const baseUrl = localStorage.getItem('FLAME_SERVER_URL');
+            if (!baseUrl) return showToast("Set Space URL first", true);
+
+            const text = document.getElementById('ttsText').value;
+            const voice = document.getElementById('voiceSelect').value;
+            
+            setLoading('ttsButton', true, 'Recording...');
+
+            try {
+                const res = await fetch(`${baseUrl}/api/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ textToSpeak: text, voiceName: voice })
+                });
+                const data = await res.json();
+                
+                if (data.audioData) {
+                    const audioUrl = pcmToWavUrl(data.audioData);
+                    const player = document.getElementById('audioPlayer');
+                    player.src = audioUrl;
+                    document.getElementById('audioContainer').classList.remove('hidden');
+                    player.play();
+                }
+            } catch (e) {
+                showToast("TTS Error", true);
+            } finally {
+                setLoading('ttsButton', false, 'Produce Audio');
+            }
+        };
+
+        // Utility: Loading States
+        function setLoading(id, isLoading, text) {
+            const btn = document.getElementById(id);
+            btn.disabled = isLoading;
+            btn.innerText = text;
+            btn.style.opacity = isLoading ? 0.7 : 1;
         }
 
-        // --- Audio Utility Functions ---
-        // Helper to convert Base64 string to ArrayBuffer (required for PCM data)
-        function base64ToArrayBuffer(base64) {
+        // Utility: PCM to WAV for Browser
+        function pcmToWavUrl(base64) {
             const binaryString = window.atob(base64);
             const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
+            const bytes = new Int16Array(len / 2);
+            for (let i = 0; i < len; i += 2) {
+                bytes[i/2] = (binaryString.charCodeAt(i+1) << 8) | binaryString.charCodeAt(i);
             }
-            return bytes.buffer;
-        }
-
-        // Converts signed 16-bit PCM data to a WAV Blob
-        function pcmToWav(pcm16, sampleRate) {
-            const numChannels = 1;
-            const bytesPerSample = 2; // 16-bit PCM
-
-            const buffer = new ArrayBuffer(44 + pcm16.length * bytesPerSample);
+            
+            const sampleRate = 24000;
+            const buffer = new ArrayBuffer(44 + bytes.length * 2);
             const view = new DataView(buffer);
 
-            // Helper function to write bytes
-            function writeString(view, offset, string) {
-                for (let i = 0; i < string.length; i++) {
-                    view.setUint8(offset + i, string.charCodeAt(i));
-                }
+            const writeStr = (off, s) => { for(let i=0; i<s.length; i++) view.setUint8(off+i, s.charCodeAt(i)); };
+            writeStr(0, 'RIFF');
+            view.setUint32(4, 36 + bytes.length * 2, true);
+            writeStr(8, 'WAVE');
+            writeStr(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeStr(36, 'data');
+            view.setUint32(40, bytes.length * 2, true);
+
+            for (let i = 0; i < bytes.length; i++) {
+                view.setInt16(44 + (i * 2), bytes[i], true);
             }
-
-            // RIFF chunk descriptor
-            writeString(view, 0, 'RIFF'); // Chunk ID
-            view.setUint32(4, 36 + pcm16.length * bytesPerSample, true); // Chunk Size
-            writeString(view, 8, 'WAVE'); // Format
-
-            // fmt sub-chunk
-            writeString(view, 12, 'fmt '); // Sub-chunk 1 ID
-            view.setUint32(16, 16, true); // Sub-chunk 1 Size (16 for PCM)
-            view.setUint16(20, 1, true); // Audio Format (1 for PCM)
-            view.setUint16(22, numChannels, true); // Num Channels
-            view.setUint32(24, sampleRate, true); // Sample Rate
-            view.setUint32(28, sampleRate * numChannels * bytesPerSample, true); // Byte Rate
-            view.setUint16(32, numChannels * bytesPerSample, true); // Block Align
-            view.setUint16(34, 16, true); // Bits Per Sample (16)
-
-            // data sub-chunk
-            writeString(view, 36, 'data'); // Sub-chunk 2 ID
-            view.setUint32(40, pcm16.length * bytesPerSample, true); // Sub-chunk 2 Size
-
-            // Write PCM data
-            let offset = 44;
-            for (let i = 0; i < pcm16.length; i++, offset += bytesPerSample) {
-                view.setInt16(offset, pcm16[i], true); // Write 16-bit signed integer
-            }
-
-            return new Blob([buffer], { type: 'audio/wav' });
+            
+            const blob = new Blob([buffer], { type: 'audio/wav' });
+            return URL.createObjectURL(blob);
         }
+
+        function showToast(msg, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full font-bold shadow-2xl z-[100] transition-all transform translate-y-20 ${isError ? 'bg-red-600' : 'bg-indigo-600'}`;
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-20'), 100);
+            setTimeout(() => {
+                toast.classList.add('translate-y-20');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Init Form
+        document.getElementById('serverUrl').value = localStorage.getItem('FLAME_SERVER_URL') || '';
     </script>
 </body>
 </html>
